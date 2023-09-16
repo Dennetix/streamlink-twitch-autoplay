@@ -4,16 +4,17 @@ use std::{
 };
 
 use anyhow::{Context, Result};
+use chrono::{DateTime, Local};
 use serde::{Deserialize, Serialize};
 use tracing::info;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct StreamlinkConfig {
-    streamlink_exec_name: String,
-    streamlink_args: Vec<String>,
-    player_exec_name: String,
-    player_args: Vec<String>,
+    pub streamlink_exec_name: String,
+    pub streamlink_args: Vec<String>,
+    pub player_exec_name: String,
+    pub player_args: Vec<String>,
 }
 
 impl Default for StreamlinkConfig {
@@ -29,9 +30,11 @@ impl Default for StreamlinkConfig {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct StreamConfig {
-    name: String,
+    pub name: String,
     #[serde(default)]
-    probability: f32,
+    pub probability: f32,
+    #[serde(skip)]
+    pub online_since: Option<DateTime<Local>>,
 }
 
 impl Default for StreamConfig {
@@ -39,6 +42,7 @@ impl Default for StreamConfig {
         Self {
             name: String::from(""),
             probability: 1.0,
+            online_since: None,
         }
     }
 }
@@ -46,8 +50,8 @@ impl Default for StreamConfig {
 #[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Config {
     #[serde(flatten)]
-    streamlink_config: StreamlinkConfig,
-    streams: Vec<StreamConfig>,
+    pub streamlink_config: StreamlinkConfig,
+    pub streams: Vec<StreamConfig>,
 }
 
 impl Config {
