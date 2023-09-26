@@ -113,7 +113,9 @@ fn spawn_streamlink_process(name: &str, config: &StreamlinkConfig) -> Result<Chi
         .args(["--player", "mpv"]);
 
     if !config.player_args.is_empty() {
-        command.arg("--player-args").args(&config.player_args);
+        command
+            .arg("--player-args")
+            .arg(&config.player_args.join(" "));
     }
 
     info!("Starting streamlink process: {:?}", command);
