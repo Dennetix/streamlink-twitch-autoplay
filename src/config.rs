@@ -111,21 +111,15 @@ impl Config {
             })
         }).collect::<Vec<_>>();
 
-        let body = serde_json::to_string_pretty(&operations)?;
-
         // The client id used in this request is the same that twitch is using for everybody
-        let client = reqwest::blocking::Client::new();
-        let res = client
-            .post("https://gql.twitch.tv/gql")
-            .header("Client-id", "kimne78kx3ncx6brgo4mv6wki5h1ko")
-            .body(body)
-            .send()
-            .context("Failed to send GraphQL query.")?;
-
-        let results = serde_json::from_str::<Vec<serde_json::Value>>(&res.text()?)
+        let response = ureq::post("https://gql.twitch.tv/gql")
+            .set("Client-id", "kimne78kx3ncx6brgo4mv6wki5h1ko")
+            .send_json(operations)
+            .context("Failed to sed GraphQL query.")?
+            .into_json::<Vec<serde_json::Value>>()
             .context("Failed to parse GraphQL query response.")?;
 
-        results
+        response
             .iter()
             .zip(&mut self.streams)
             .for_each(|(json, stream_config)| {
