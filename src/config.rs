@@ -34,14 +34,10 @@ impl Default for StreamlinkConfig {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StreamConfig {
     pub name: String,
-    #[serde(default = "default_probability")]
-    pub probability: f32,
+    #[serde(default)]
+    pub weight: u32,
     #[serde(skip)]
     pub online_since: Option<DateTime<Local>>,
-}
-
-fn default_probability() -> f32 {
-    1.0
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]

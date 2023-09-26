@@ -16,6 +16,13 @@ struct StreamlinkProcess {
     process: Child,
 }
 
+impl Drop for StreamlinkProcess {
+    fn drop(&mut self) {
+        let _ = self.process.kill();
+        let _ = self.process.wait();
+    }
+}
+
 fn main() -> Result<()> {
     tracing::subscriber::set_global_default(
         FmtSubscriber::builder()
@@ -60,16 +67,16 @@ fn main() -> Result<()> {
             );
 
             if !online_streams.is_empty() {
-                // Choose the first stream with probability one or higher
+                // Choose the first stream with weight zero
                 let mut stream = online_streams
                     .iter()
-                    .find(|stream| stream.probability >= 1.0)
+                    .find(|stream| stream.weight == 0)
                     .cloned();
 
-                // If there is no stream with probability one randomly choose one weighted by probability
+                // If there is no stream with weight zero randomly choose one by weight
                 // Only do this if no stream is currently running to not end up constantly switching streams
                 if stream.is_none() && streamlink_process.is_none() {
-                    let weights = online_streams.iter().map(|stream| stream.probability);
+                    let weights = online_streams.iter().map(|stream| stream.weight);
                     let dist = WeightedIndex::new(weights)?;
                     stream = Some(online_streams[dist.sample(&mut rng)]);
                 }
@@ -77,12 +84,7 @@ fn main() -> Result<()> {
                 if let Some(stream) = stream {
                     // If a stream is currently running only stop it if the new one is different
                     let should_open = if let Some(streamlink_process) = &mut streamlink_process {
-                        if streamlink_process.stream.name != stream.name {
-                            streamlink_process.process.kill()?;
-                            true
-                        } else {
-                            false
-                        }
+                        streamlink_process.stream.name != stream.name
                     } else {
                         true
                     };
