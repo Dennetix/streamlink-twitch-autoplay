@@ -128,9 +128,7 @@ impl Config {
                         .get("createdAt")
                         .and_then(|created_at| created_at.as_str())
                         .and_then(|created_at| DateTime::parse_from_rfc3339(created_at).ok());
-                    if let Some(time_utc) = time_utc {
-                        stream_config.online_since = Some(DateTime::<Local>::from(time_utc));
-                    }
+                    stream_config.online_since = time_utc.map(DateTime::<Local>::from);
                 } else {
                     error!("User {} does not exist!", stream_config.name);
                 }

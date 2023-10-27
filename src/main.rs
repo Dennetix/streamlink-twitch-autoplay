@@ -112,7 +112,8 @@ fn spawn_streamlink_process(name: &str, config: &StreamlinkConfig) -> Result<Chi
         .args(&config.streamlink_args)
         .arg(format!("twitch.tv/{name}"))
         .arg(&config.streamlink_quality)
-        .args(["--player", "mpv"]);
+        .arg("--player")
+        .arg(&config.player_exec_name);
 
     if !config.player_args.is_empty() {
         command
@@ -124,5 +125,5 @@ fn spawn_streamlink_process(name: &str, config: &StreamlinkConfig) -> Result<Chi
 
     command
         .spawn()
-        .context("Failed to execute streamlink process.")
+        .context("Failed to spawn streamlink process.")
 }
